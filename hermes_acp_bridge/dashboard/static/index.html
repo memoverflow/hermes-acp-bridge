@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermes ACP Bridge — Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌉 Hermes ACP Bridge</h1>
+            <div class="status-bar">
+                <span class="status-dot" id="ws-status"></span>
+                <span id="connection-text">Connecting...</span>
+                <span class="uptime" id="uptime">—</span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <section class="panel sessions-panel">
+                <h2>Active Sessions</h2>
+                <div id="sessions-list" class="scroll-area">
+                    <p class="empty">No active sessions</p>
+                </div>
+            </section>
+
+            <section class="panel stream-panel">
+                <h2>Live Stream</h2>
+                <div id="stream-output" class="scroll-area stream-area">
+                </div>
+            </section>
+
+            <section class="panel timeline-panel">
+                <h2>Event Timeline</h2>
+                <div id="timeline" class="scroll-area">
+                </div>
+            </section>
+
+            <section class="panel metrics-panel">
+                <h2>Metrics</h2>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="metric-value" id="total-sessions">0</span>
+                        <span class="metric-label">Sessions</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value" id="total-messages">0</span>
+                        <span class="metric-label">Messages</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value" id="total-events">0</span>
+                        <span class="metric-label">Events</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="/app.js"></script>
+</body>
+</html>

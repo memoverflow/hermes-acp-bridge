@@ -1,0 +1,216 @@
+:root {
+    --bg: #0a0a0f;
+    --panel-bg: rgba(20, 20, 35, 0.7);
+    --panel-border: rgba(100, 120, 255, 0.15);
+    --text: #e0e0e8;
+    --text-dim: #8888aa;
+    --accent: #6c7bff;
+    --accent-glow: rgba(108, 123, 255, 0.3);
+    --green: #4ceb8b;
+    --red: #ff5566;
+    --orange: #ffaa33;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 16px 24px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+}
+
+header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    transition: background 0.3s;
+}
+
+.status-dot.connected {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+}
+
+.panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 16px;
+    overflow: hidden;
+}
+
+.panel h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+}
+
+.sessions-panel { grid-row: 1; grid-column: 1; }
+.stream-panel { grid-row: 1 / 3; grid-column: 2; }
+.timeline-panel { grid-row: 2; grid-column: 1; }
+.metrics-panel { grid-row: 3; grid-column: 1 / 3; }
+
+.scroll-area {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+.stream-area {
+    max-height: 500px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.empty {
+    color: var(--text-dim);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.session-card {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.session-card .cli-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.session-card .cli-badge.claude {
+    background: rgba(108, 123, 255, 0.2);
+    color: var(--accent);
+}
+
+.session-card .cli-badge.codex {
+    background: rgba(76, 235, 139, 0.2);
+    color: var(--green);
+}
+
+.session-card .session-id {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+.session-card .session-stats {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.stream-chunk {
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.stream-chunk.thought {
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+.stream-chunk.message {
+    color: var(--text);
+}
+
+.timeline-event {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 11px;
+}
+
+.timeline-event .time {
+    color: var(--text-dim);
+    margin-right: 8px;
+}
+
+.metrics-grid {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+}
+
+.metric {
+    text-align: center;
+}
+
+.metric-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.metric-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    .stream-panel { grid-row: auto; grid-column: auto; }
+    .timeline-panel { grid-row: auto; grid-column: auto; }
+    .metrics-panel { grid-column: auto; }
+}
