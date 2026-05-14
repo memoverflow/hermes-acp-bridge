@@ -66,6 +66,39 @@ class TestACPHandler(unittest.TestCase):
         parsed = json.loads(result)
         self.assertEqual(parsed["error"]["code"], -32700)
 
+    def test_fs_read_and_write(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            p = f"{d}/note.txt"
+            write_msg = json.dumps({
+                "jsonrpc": "2.0", "id": 10, "method": "fs/write_text_file",
+                "params": {"path": p, "content": "hello"},
+            })
+            res = json.loads(self._run(self.handler.handle_message(write_msg)))
+            self.assertTrue(res["result"]["ok"])
+
+            read_msg = json.dumps({
+                "jsonrpc": "2.0", "id": 11, "method": "fs/read_text_file",
+                "params": {"path": p},
+            })
+            res = json.loads(self._run(self.handler.handle_message(read_msg)))
+            self.assertEqual(res["result"]["content"], "hello")
+
+    def test_permission_auto_approve(self):
+        msg = json.dumps({
+            "jsonrpc": "2.0", "id": 12, "method": "session/request_permission",
+            "params": {
+                "options": [
+                    {"optionId": "reject-1", "kind": "reject"},
+                    {"optionId": "allow-1", "kind": "allow_once"},
+                ]
+            },
+        })
+        res = json.loads(self._run(self.handler.handle_message(msg)))
+        out = res["result"]["outcome"]
+        self.assertEqual(out["outcome"], "selected")
+        self.assertEqual(out["optionId"], "allow-1")
+
 
 if __name__ == "__main__":
     unittest.main()

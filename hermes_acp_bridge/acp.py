@@ -3,7 +3,10 @@
 import json
 import logging
 import uuid
+from pathlib import Path
 from typing import Any, Optional
+
+_MAX_FS_BYTES = 5 * 1024 * 1024
 
 logger = logging.getLogger(__name__)
 
@@ -68,11 +71,67 @@ class ACPHandler:
             "session/new": self._handle_session_new,
             "session/load": self._handle_session_load,
             "session/prompt": self._handle_session_prompt,
+            "session/cancel": self._handle_session_cancel,
+            "fs/read_text_file": self._handle_fs_read,
+            "fs/write_text_file": self._handle_fs_write,
+            "session/request_permission": self._handle_permission,
         }
         handler = handlers.get(method)
         if handler is None:
             raise ACPError(-32601, f"Method not found: {method}")
         return await handler(params)
+
+    async def _handle_session_cancel(self, params: dict) -> dict:
+        session_id = params.get("sessionId") or self._session_id
+        if session_id:
+            await self.session_manager.cancel_session(session_id)
+        return {"ok": True}
+
+    async def _handle_fs_read(self, params: dict) -> dict:
+        path_str = params.get("path")
+        if not isinstance(path_str, str) or not path_str:
+            raise ACPError(-32602, "path required")
+        p = Path(path_str).expanduser()
+        if not p.exists() or not p.is_file():
+            raise ACPError(-32000, f"file not found: {p}")
+        if p.stat().st_size > _MAX_FS_BYTES:
+            raise ACPError(-32000, "file too large")
+        return {"content": p.read_text(encoding="utf-8", errors="replace")}
+
+    async def _handle_fs_write(self, params: dict) -> dict:
+        path_str = params.get("path")
+        if not isinstance(path_str, str) or not path_str:
+            raise ACPError(-32602, "path required")
+        content = params.get("content", "")
+        if not isinstance(content, str):
+            raise ACPError(-32602, "content must be string")
+        data = content.encode("utf-8")
+        if len(data) > _MAX_FS_BYTES:
+            raise ACPError(-32000, "content too large")
+        p = Path(path_str).expanduser()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
+        return {"ok": True, "bytes": len(data)}
+
+    async def _handle_permission(self, params: dict) -> dict:
+        options = params.get("options") or []
+        chosen: Optional[dict] = None
+        for opt in options:
+            if not isinstance(opt, dict):
+                continue
+            kind = str(opt.get("kind", "")).lower()
+            option_id = str(opt.get("optionId", "")).lower()
+            if kind.startswith("allow") or "allow" in option_id:
+                chosen = opt
+                break
+        if chosen is None and options and isinstance(options[0], dict):
+            chosen = options[0]
+        return {
+            "outcome": {
+                "outcome": "selected",
+                "optionId": (chosen or {}).get("optionId", "allow"),
+            }
+        }
 
     async def _handle_notification(self, method: str, params: dict) -> None:
         if method == "session/cancel":
@@ -134,11 +193,16 @@ class ACPHandler:
         if not session_id:
             raise ACPError(-32602, "No active session")
 
-        prompt_parts = params.get("prompt", [])
-        text = ""
-        for part in prompt_parts:
-            if isinstance(part, dict) and part.get("type") == "text":
-                text += part.get("text", "")
+        raw_prompt = params.get("prompt", [])
+        if isinstance(raw_prompt, str):
+            text = raw_prompt
+        else:
+            text = ""
+            for part in raw_prompt or []:
+                if isinstance(part, str):
+                    text += part
+                elif isinstance(part, dict) and part.get("type") == "text":
+                    text += part.get("text", "")
 
         if not text.strip():
             raise ACPError(-32602, "Empty prompt")
